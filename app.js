@@ -1,69 +1,114 @@
 const express = require('express');
-const bodyParser = require('body-parser');
+const bodyParaser = require("body-parser");
+const cors = require("cors");
 const app = express();
 const port = 3000;
 
+app.use(cors());
+app.use(bodyParaser.json());
 
-app.use(bodyParser.json());
 
-app.get("/", (req, res)=>{
+app.get('/', async(req, res)=>{
   if(res.status(200)){
-    res.send('<h1>Hello Server</h1>')
-  } else{
-    res.status(404).send("서버 오류")
-    console.log("Node Frot rendering Failed")
+    res.send('<h1>데이터 통신 성공</h>');
+  } else {
+    res.status(404).send('서버 오류')
   }
+
 })
 
 
-const image = []
+
+const images = []
+
+app.post('/navebooks', async(req, res)=>{
 
 
-app.post('/api', async (req, res)=>{
+  const book = req.body.book
 
+    //   res.json({ // Return JSON object with the book
+    //     message: "okay?! from a node",
+    //     book: book,
+    // });
+
+  
 try{
-  const word = req.body.word;
-  console.log("Received data",word);
 
-  const naverUrl = new URL("https://openapi.naver.com/v1/search/book.json");
-  naverUrl.searchParams.set('query', word);
+  const naverUrl = new URL('https://openapi.naver.com/v1/search/book.json');
+  naverUrl.searchParams.set('query', book);
   naverUrl.searchParams.set('display', 1);
 
-  const options = {
+  const options ={
     method : 'GET',
     headers : {
       'Content-Type': 'application/json',
       'X-Naver-Client-Id': 'ytaQUUoLOhwBVF3BCR1m',
-      'X-Naver-Client-Secret': 'WWhC647In7'
+      'X-Naver-Client-Secret': 'FQqOQ31UUj'
+    }
+  };
+  const response = await fetch(naverUrl.toString(), options);
+
+  // console.log("FetchBookImage function", response);
+
+  if(!response.ok){
+    throw new Error (`Naver API fetch failed ${response.status}`)
+  }
+
+  const data = await response.json();
+  console.log("Response URL", data.items[0].image);
+
+  images.push({
+    title : data.items[0].tittle,
+    imageURL : data.items[0].image,
+  })
+  // res.json(images);
+  
+} catch(error) {
+  console.log("Error fetching data at Node", error)
+};
+
+})
+
+console.log("BookUrl List", images)
+
+
+const fetchBookImage = async (book) =>{
+  try{
+
+  const naverUrl = new URL('https://openapi.naver.com/v1/search/book.json:');
+  naverUrl.searchParams.set('query', book.bookname);
+  naverUrl.searchParams.set('display', 1);
+
+  const options ={
+    method : 'GET',
+    headers : {
+      'Content-Type': 'application/json',
+      'X-Naver-Client-Id': 'ytaQUUoLOhwBVF3BCR1m',
+      'X-Naver-Client-Secret': '5ebWNQFltn'
     }
   };
 
   const response = await fetch(naverUrl.toString(), options);
-  
-  console.log("Sending shapg of URL", response);
-  
+
+  console.log("FetchBookImage function", response);
+
   if(!response.ok){
-    throw new Error (`Naver API Failed ${response.status}`);
+    throw new Error (`Naver API fetch failed ${response.status}`)
   }
 
   const data = await response.json();
-  console.log("Data coming from NAVER",data);
-  const imageUrl = data.items.image;
-  image.push({word : imageUrl})
+  console.log("Response ", data);
 
-  console.log("image Data check inside", typeof(image), image)
+  res.json(images);
 
-}
-catch(error){
-  console.error("Error", error)
-  res.status(400).json({message : "Invaild request data"})
-}
 
-});
+  } catch(error) {
+    console.log("Error fetching data at Node", error)
+  }
+};
 
-console.log("image Data check", typeof(image), image)
 
 
 app.listen(port, ()=>{
-  console.log(`http://localhost:${port} Node Server starts ${port}`);
+  console.log(`http://localhost:${port} Let get the hell` )
 })
