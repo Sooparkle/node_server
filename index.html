@@ -1,59 +1,105 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>Get Input Value</title>
-  </head>
-  <body>
-    <input type="text" id="myInput" />
-    <!-- <button type="button" onclick="getInputValue()">Get Value</button> -->
-    <button type="button" id="button">Enter</button>
-    <script>
-      const $btn = document.querySelectorAll("#myInput, #button");
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    #app{
+      transform: translate(50%, 50%);
+    }
 
-      $btn[1].addEventListener("click", () => {
-        console.log("value", $btn[0].value);
+    div{
+      margin: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <input id="id"type="text"> 
+    <input id="pass" type="text">
+    <button id="submit" type="submit" onclick="submit" >회원가입</button> 
+  </div>
 
-        fetchAPI($btn[0].value);
-      });
+  <div>
+    <input type="text" id="input">
+    <button class="search" type="button">책 검색</button>
+  </div>
 
-      const fetchAPI = async (keyword) => {
-        try {
-          console.log("Fecth API has been starts! with", keyword);
+  <script>
+    const $searchInput = document.querySelector('#input');
+    const $searchBtn = document.querySelector('.search');
+    const buttons =document.querySelectorAll('#app,#id,#submit,#pass');
 
-          const options = {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              word: keyword,
-            }),
-          };
 
-          const response = await fetch("http://localhost:3000/api", options);
+    $searchBtn.addEventListener("click", async ()=>{
+      try{
+        const title = $searchInput.value;
+      console.log("title", title);
+      const nodeUrl = new URL('http://localhost:3000/navebooks');
 
-          if (!response.ok) {
-            throw new Error(`Nave API failed, ${response.status}`);
-          }
-
-          const data = await response.json();
-          console.log("NAVER API has been successful", data);
-        } catch (e) {
-          console.log(`Error occurs ${e}`);
-        } finally {
-          $btn[1].valeu = "";
-        }
+      const options={
+        method:"POST",
+        headers : {
+          'Content-Type' : 'application/json',
+        },
+        body: JSON.stringify({
+          book: title })
       };
 
-      // function getInputValue() {
-      //   const inputElement = document.getElementById("myInput");
-      //   const inputValue = inputElement.value;
-      //   alert("The input value is: " + inputValue);
-      //   console.log("test", input)
-      // }
-    </script>
-  </body>
+      const response = await fetch(nodeUrl.toString(), options)
+      if(!response.ok){
+        throw new Error(`서버 통신 오류 ${response.status}`)
+      }
+
+      const jsonData = await response.json();
+      // const jsonData = JSON.parse(data)
+      console.log(`Data has been complete ${jsonData}`)
+
+      for (const book of jsonData) {
+  console.log(`Title: ${book.title}`);
+  console.log(`Image URL: ${book.imageURL}`);
+  console.log(`Description: ${book.description}`);
+  console.log("---------------------------"); // Separator for each book
+}
+      
+
+      }
+      catch(error) {
+        console.log(`Can not connect ${error}`)
+      }
+    
+    })
+
+
+    // signup 로직
+    // buttons[3].onclick= async function(){
+    //   const headers = new Headers();
+    //   headers.append('Content-Type', 'application/json')
+
+    //   const url = 'http://localhost:3000/sign'
+
+    //   const myData = {
+    //     id : buttons[1].value,
+    //     pass : buttons[2].value,
+    //     signup : false
+    //   }
+
+    //   const options ={
+    //     headers,
+    //     "method" : 'POST',
+    //     "body" :JSON.stringify(myData)
+    //   }
+
+    //   const req = await fetch(url, options)
+    //   const response = await req.json()
+      
+
+    //   let push = document.createElement('div');
+    //   push.innerHTML = response.result
+    //   buttons[0].append(push)
+    // }
+
+  </script>
+</body>
 </html>
-
-
-
